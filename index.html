@@ -115,6 +115,7 @@
     <div class="popup-content">
       <h3>QRIS</h3>
       <img class="qris" src="https://files.catbox.moe/iakmgb.jpg" alt="QRIS" />
+      <button onclick="downloadQRIS()">Download QRIS</button>
       <p>Kirim bukti pembayaran ke admin.</p>
       <button onclick="window.location.href='https://wa.me/6283840810226'">Hubungi Admin</button>
       <button onclick="closePopup('qrisPopup')">Tutup</button>
@@ -123,6 +124,7 @@
     <div class="popup-content">
       <h3>DANA</h3>
       <p class="method">Nomor: 08131159010</p>
+      <button onclick="copyText('08131159010')">Copy Nomor</button>
       <p>Kirim bukti pembayaran ke admin.</p>
       <button onclick="window.location.href='https://wa.me/6283840810226'">Hubungi Admin</button>
       <button onclick="closePopup('danaPopup')">Tutup</button>
@@ -131,6 +133,7 @@
     <div class="popup-content">
       <h3>GOPAY</h3>
       <p class="method">Nomor: 083840810226</p>
+      <button onclick="copyText('083840810226')">Copy Nomor</button>
       <p>Kirim bukti pembayaran ke admin.</p>
       <button onclick="window.location.href='https://wa.me/6283840810226'">Hubungi Admin</button>
       <button onclick="closePopup('gopayPopup')">Tutup</button>
@@ -142,5 +145,19 @@
     function closePopup(id) {
       document.getElementById(id).style.display = 'none';
     }
+  
+    // Copy function
+    function copyText(text) {
+      navigator.clipboard.writeText(text);
+      alert('Nomor berhasil disalin: ' + text);
+    }
+
+    // Download QRIS
+    function downloadQRIS() {
+      const link = document.createElement('a');
+      link.href = 'https://files.catbox.moe/iakmgb.jpg';
+      link.download = 'QRIS.jpg';
+      link.click();
+    }
   </script></body>
-        </html>
+  </html>
