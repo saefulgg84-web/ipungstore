@@ -1,144 +1,146 @@
-// PaymentWebsite.jsx — versi yang lebih bagus (UI modern + animasi + layout premium) // Menggunakan: React, TailwindCSS, Framer Motion, Stripe Elements // Catatan: tetap butuh backend untuk membuat PaymentIntent
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metode Pembayaran</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #000000;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: rgba(20, 20, 20, 0.8);
+      padding: 24px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px #0ff;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      border: 2px solid #0ff;
+    }
+    .logo {
+      width: 120px;
+      margin-bottom: 16px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #0ff;
+    }
+    h1, h3, p, .label {
+      color: #0ff;
+      text-shadow: 0 0 8px #0ff;
+    }
+    .method, button.method {
+      background: rgba(0, 20, 20, 0.7);
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 12px;
+      border: 2px solid #0ff;
+      font-size: 16px;
+      color: #0ff;
+      text-shadow: 0 0 8px #0ff;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .method:hover, button.method:hover {
+      box-shadow: 0 0 20px #0ff;
+      transform: scale(1.03);
+    }
+    img.qris {
+      width: 260px;
+      border-radius: 12px;
+      margin: 16px 0;
+      box-shadow: 0 0 20px #0ff;
+    }
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+    }
+    .popup-content {
+      background: rgba(10, 10, 10, 0.9);
+      padding: 20px;
+      border-radius: 16px;
+      text-align: center;
+      width: 300px;
+      border: 2px solid #0ff;
+      box-shadow: 0 0 25px #0ff;
+    }
+    .popup-content button {
+      background: black;
+      border: 2px solid #0ff;
+      color: #0ff;
+      padding: 10px 14px;
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 10px;
+      cursor: pointer;
+      text-shadow: 0 0 8px #0ff;
+      transition: 0.2s;
+    }
+    .popup-content button:hover {
+      box-shadow: 0 0 20px #0ff;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img class="logo" src="https://img1.pixhost.to/images/10365/663815157_lyrra-md.jpg" alt="Logo Kamu" />
+    <h1>Metode Pembayaran</h1>
+    <p>Silakan pilih salah satu metode di bawah:</p><!-- BUTTONS -->
+<button onclick="openPopup('qrisPopup')" class="method">QRIS</button>
+<button onclick="openPopup('danaPopup')" class="method">DANA</button>
+<button onclick="openPopup('gopayPopup')" class="method">GOPAY</button>
 
-import React, { useState } from "react"; import { motion } from "framer-motion"; import { loadStripe } from "@stripe/stripe-js"; import { Elements, CardElement, useStripe, useElements, } from "@stripe/react-stripe-js"; import axios from "axios"; import { ShieldCheck, CreditCard, CheckCircle, Loader2 } from "lucide-react";
+<p style="margin-top:16px; font-size:14px; color:#444;">
+  Setelah melakukan pembayaran, silakan kirim bukti transfer ke admin.
+</p>
+<p style="font-size:14px; margin-top:4px;">
+  <strong>WhatsApp Admin:</strong> 6283840810226<br>
+  <strong>Telegram Admin:</strong> @ipung_brye
+</p>
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_REPLACE_ME");
-
-function CheckoutForm() { const stripe = useStripe(); const elements = useElements();
-
-const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [amount, setAmount] = useState(100000); const [loading, setLoading] = useState(false); const [message, setMessage] = useState(null);
-
-const handleSubmit = async (e) => { e.preventDefault(); setMessage(null);
-
-if (!stripe || !elements) return;
-
-setLoading(true);
-
-try {
-  const createResp = await axios.post("/api/create-payment-intent", {
-    amount: Math.max(100, amount),
-    currency: "idr",
-    receipt_email: email,
-    metadata: { customer_name: name },
-  });
-
-  const clientSecret = createResp.data.clientSecret;
-
-  const cardElement = elements.getElement(CardElement);
-
-  const confirm = await stripe.confirmCardPayment(clientSecret, {
-    payment_method: {
-      card: cardElement,
-      billing_details: { name, email },
-    },
-  });
-
-  if (confirm.error) setMessage(confirm.error.message);
-  else if (confirm.paymentIntent?.status === "succeeded") setMessage("Pembayaran Berhasil!");
-  else setMessage("Status: " + confirm.paymentIntent?.status);
-} catch (err) {
-  setMessage(err.message);
-} finally {
-  setLoading(false);
-}
-
-};
-
-return ( <motion.form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-xl border max-w-md mx-auto" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} > <h2 className="text-3xl font-bold mb-3 flex items-center gap-2"> <CreditCard size={28} /> Pembayaran </h2> <p className="text-gray-500 text-sm mb-6">Aman, cepat, dan terenkripsi.</p>
-
-<div className="space-y-4">
-    <div>
-      <label className="text-sm">Nama</label>
-      <input
-        className="block w-full border rounded-xl p-3 mt-1"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
+  </div>  <!-- POPUP QRIS -->  <div id="qrisPopup" class="popup">
+    <div class="popup-content">
+      <h3>QRIS</h3>
+      <img class="qris" src="https://files.catbox.moe/iakmgb.jpg" alt="QRIS" />
+      <p>Kirim bukti pembayaran ke admin.</p>
+      <button onclick="window.location.href='https://wa.me/6283840810226'">Hubungi Admin</button>
+      <button onclick="closePopup('qrisPopup')">Tutup</button>
     </div>
-
-    <div>
-      <label className="text-sm">Email</label>
-      <input
-        type="email"
-        className="block w-full border rounded-xl p-3 mt-1"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
+  </div>  <!-- POPUP DANA -->  <div id="danaPopup" class="popup">
+    <div class="popup-content">
+      <h3>DANA</h3>
+      <p class="method">Nomor: 08131159010</p>
+      <p>Kirim bukti pembayaran ke admin.</p>
+      <button onclick="window.location.href='https://wa.me/6283840810226'">Hubungi Admin</button>
+      <button onclick="closePopup('danaPopup')">Tutup</button>
     </div>
-
-    <div>
-      <label className="text-sm">Jumlah (Rp)</label>
-      <input
-        type="number"
-        className="block w-full border rounded-xl p-3 mt-1"
-        value={amount}
-        min="100"
-        onChange={(e) => setAmount(Number(e.target.value))}
-        required
-      />
+  </div>  <!-- POPUP GOPAY -->  <div id="gopayPopup" class="popup">
+    <div class="popup-content">
+      <h3>GOPAY</h3>
+      <p class="method">Nomor: 083840810226</p>
+      <p>Kirim bukti pembayaran ke admin.</p>
+      <button onclick="window.location.href='https://wa.me/6283840810226'">Hubungi Admin</button>
+      <button onclick="closePopup('gopayPopup')">Tutup</button>
     </div>
-
-    <div className="border rounded-xl p-4 bg-gray-50">
-      <CardElement options={{ hidePostalCode: true }} />
-    </div>
-  </div>
-
-  <button
-    type="submit"
-    disabled={!stripe || loading}
-    className="w-full mt-6 bg-indigo-600 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 disabled:opacity-50"
-  >
-    {loading && <Loader2 className="animate-spin" size={20} />} Bayar Sekarang
-  </button>
-
-  {message && (
-    <div className="mt-4 flex items-center gap-2 text-green-600">
-      <CheckCircle size={20} /> {message}
-    </div>
-  )}
-</motion.form>
-
-); }
-
-export default function PaymentApp() { return ( <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center p-10"> <Elements stripe={stripePromise}> <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10" > {/* Info Section */} <motion.div className="p-10 bg-white rounded-3xl shadow-xl border" initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 }} > <h1 className="text-4xl font-bold mb-4">MyPay Premium</h1> <p className="text-gray-600 mb-6">Website payment modern dengan UI elegan dan keamanan maksimal.</p>
-
-<div className="space-y-3 text-gray-700">
-          <p className="flex items-center gap-2"><ShieldCheck /> Enkripsi penuh & PCI-Compliant</p>
-          <p className="flex items-center gap-2"><ShieldCheck /> Support 3D Secure</p>
-          <p className="flex items-center gap-2"><ShieldCheck /> PaymentIntent API terbaru</p>
-          <p className="flex items-center gap-2"><ShieldCheck /> Ready untuk production</p>
-        </div>
-      </motion.div>
-
-      {/* Form Stripe */}
-      <CheckoutForm />
-
-      {/* QRIS + E-Wallet Section */}
-      <motion.div
-        className="p-8 bg-white rounded-3xl shadow-xl border flex flex-col items-center"
-        initial={{ x: 40, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ delay: 0.15 }}
-      >
-        <h2 className="text-2xl font-bold mb-4">Pembayaran QRIS & E-Wallet</h2>
-
-        <img
-          src="https://files.catbox.moe/iakmgb.jpg"
-          alt="QRIS"
-          className="w-64 h-64 object-contain rounded-xl shadow mb-6"
-        />
-
-        <div className="w-full space-y-3 text-center">
-          <p className="font-semibold text-gray-700">DANA: <span className="font-bold">08131159010</span></p>
-          <p className="font-semibold text-gray-700">GOPAY: <span className="font-bold">083840810226</span></p>
-        </div>
-
-        <p className="mt-6 text-xs text-gray-500">Upload bukti transfer setelah pembayaran.</p>
-      </motion.div>
-    </motion.div>
-  </Elements>
-</div>
-
-); }
+  </div>  <script>
+    function openPopup(id) {
+      document.getElementById(id).style.display = 'flex';
+    }
+    function closePopup(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+  </script></body>
+        </html>
